@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benimle Çıkar Mısın? ❤️ ✨</title>
+
+<!-- Konfeti Kütüphanesi -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+/* --- GENEL AYARLAR --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Dışarı taşmaları gizle */
+  font-family: 'Poppins', 'Segoe UI', sans-serif; /* Daha modern bir yazı tipi */
+  /* Canlı ve yumuşak geçişli arka plan */
+  background: linear-gradient(135deg, #ffebee 0%, #f8bbd0 50%, #f48fb1 100%);
+  position: relative;
+}
+
+/* --- ARKA PLAN SÜSLEMELERİ (Yüzen Büyük Kalpler) --- */
+body::before, body::after {
+  content: "♥";
+  position: fixed;
+  color: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  z-index: 1;
+}
+
+body::before {
+  font-size: 30rem;
+  top: -10%;
+  left: -15%;
+  animation: floatBG 8s infinite ease-in-out;
+}
+
+body::after {
+  font-size: 20rem;
+  bottom: -10%;
+  right: -10%;
+  animation: floatBG 10s infinite ease-in-out reverse;
+}
+
+@keyframes floatBG {
+  0%, 100% { transform: translateY(0) rotate(-10deg); }
+  50% { transform: translateY(-40px) rotate(10deg); }
+}
+
+/* --- KART TASARIMI --- */
+.card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(15px); /* Cam efekti */
+  -webkit-backdrop-filter: blur(15px);
+  padding: 50px 30px;
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(173, 20, 87, 0.2);
+  text-align: center;
+  width: 90%;
+  max-width: 440px;
+  position: relative;
+  z-index: 5;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transform: translateY(20px);
+  opacity: 0;
+  animation: cardFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes cardFadeIn {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- BAŞLIK --- */
+h1 {
+  color: #ad1457;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 35px;
+  line-height: 1.3;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+}
+
+/* --- BUTON ALANI --- */
+.btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  min-height: 130px; /* Hayır butonu kaçarken alan bırakmak için */
+  position: relative;
+}
+
+/* --- BUTON ORTAK STİLLERİ --- */
+button {
+  padding: 16px 30px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Zıplama efekti */
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* --- EVET BUTONU --- */
+#yes-btn {
+  background: linear-gradient(135deg, #ff4081, #d81b60);
+  color: white;
+  z-index: 2;
+}
+
+#yes-btn:hover {
+  box-shadow: 0 10px 25px rgba(216, 27, 96, 0.4);
+  transform: translateY(-3px) scale(1.03);
+}
+
+/* --- HAYIR BUTONU --- */
+#no-btn {
+  background: #cfd8dc;
+  color: #546e7a;
+  z-index: 3;
+  touch-action: manipulation; /* Mobilde daha iyi dokunma */
+}
+
+/* --- ROKET VE PATLAMA --- */
+.rocket {
+  position: absolute;
+  font-size: 4rem;
+  pointer-events: none;
+  z-index: 10;
+  transition: transform 1.2s ease-in, opacity 0.5s ease-in;
+}
+
+.rocket-fly {
+  transform: translateY(-800px) scale(1.5) rotate(10deg);
+  opacity: 0;
+}
+
+/* --- EVET DEDİKTEN SONRAKİ MESAJ --- */
+#result-message {
+  display: none;
+  margin-top: 25px;
+  font-size: 1.25rem;
+  color: #880e4f;
+  font-weight: 500;
+  line-height: 1.7;
+  padding: 0 10px;
+  animation: fadeInDown 0.8s ease forwards;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- GÜLLERİN UÇUŞU --- */
+.rose {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  font-size: 35px;
+  animation: roseFly 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes roseFly {
+  0% { transform: translate(0, 0) rotate(0deg) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(1.3); opacity: 0; }
+}
+
+/* --- YÜZEN KALPLER (YENİ) --- */
+.floating-heart {
+  position: fixed;
+  bottom: -50px;
+  color: rgba(255, 64, 129, 0.7);
+  pointer-events: none;
+  z-index: 2;
+  font-size: var(--size);
+  animation: floatUp var(--duration) linear forwards;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-110vh) translateX(var(--wobble)) rotate(var(--rotation)); opacity: 0; }
+}
+
+/* --- MOBİL UYUMLULUK --- */
+@media (max-width: 400px) {
+  .card { padding: 40px 20px; }
+  h1 { font-size: 1.8rem; }
+  button { padding: 14px 24px; font-size: 1.1rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="main-card">
+  <h1 id="question">Benimle çıkar mısın? ❤️</h1>
+
+  <div class="btn-container" id="btn-container">
+    <button id="yes-btn">Evet! 💖</button>
+    <button id="no-btn">Hayır</button>
+  </div>
+
+  <div id="result-message"></div>
+</div>
+
+<script>
+// Elementleri Seç
+const noBtn = document.getElementById('no-btn');
+const yesBtn = document.getElementById('yes-btn');
+const question = document.getElementById('question');
+const btnContainer = document.getElementById('btn-container');
+const resultMessage = document.getElementById('result-message');
+const card = document.getElementById('main-card');
+
+let noClickCount = 0;
+
+// --- HAYIR BUTONU FONKSİYONLARI ---
+
+function handleNoInteraction(e) {
+  // Tıklamanın varsayılan davranışını engelle (mobilde zıplamayı önler)
+  if(e.type === 'touchstart') e.preventDefault();
+  
+  noClickCount++;
+
+  // Konteynırın ve butonun boyutlarını al
+  const containerRect = btnContainer.getBoundingClientRect();
+  const btnRect = noBtn.getBoundingClientRect();
+
+  if (noClickCount < 4) {
+    // 1-3 Tıklama: Rastgele ama güvenli bir yere kaç
+    const padding = 10;
+    const maxX = containerRect.width - btnRect.width - (padding * 2);
+    const maxY = containerRect.height - btnRect.height - (padding * 2);
+
+    // İlk kaçışta absolute yap
+    if(noBtn.style.position !== 'absolute') {
+        noBtn.style.position = 'absolute';
+    }
+
+    // Rastgele yeni X ve Y koordinatları (padding dahil)
+    const randomX = Math.random() * maxX + padding;
+    const randomY = Math.random() * maxY + padding;
+
+    // Pürüzsüz hareket
+    noBtn.style.left = randomX + 'px';
+    noBtn.style.top = randomY + 'px';
+    // Transformu sıfırla (eğer varsa)
+    noBtn.style.transform = 'none';
+    
+    // Rastgele hafif bir rotasyon ekle
+    noBtn.style.transform = `rotate(${(Math.random() - 0.5) * 20}deg)`;
+
+  } else if (noClickCount === 4) {
+    // 4. Tıklama: Roket fırlat
+    noBtn.style.pointerEvents = 'none'; // Daha fazla tıklanmasın
+
+    // Roket emojisini oluştur
+    const rocket = document.createElement('div');
+    rocket.className = 'rocket';
+    rocket.innerHTML = '🚀';
+
+    // Roketin başlangıç konumunu butonun merkezi yap
+    rocket.style.left = (noBtn.offsetLeft + noBtn.offsetWidth / 2 - 32) + 'px'; // 32 = emoji genişliğinin yarısı
+    rocket.style.top = (noBtn.offsetTop + noBtn.offsetHeight / 2 - 32) + 'px';
+
+    btnContainer.appendChild(rocket);
+
+    // Küçük bir gecikmeyle roketi uçur ve butonu yok et
+    setTimeout(() => {
+      rocket.classList.add('rocket-fly');
+      noBtn.style.opacity = '0';
+      noBtn.style.transform = 'scale(0) rotate(720deg)';
+    }, 50);
+
+    // Roket ve butonu DOM'dan tamamen kaldır
+    setTimeout(() => {
+      rocket.remove();
+      noBtn.remove();
+    }, 1500);
+  }
+}
+
+// Hem tıklama hem de dokunma olaylarını dinle
+noBtn.addEventListener('click', handleNoInteraction);
+noBtn.addEventListener('touchstart', handleNoInteraction, {passive: false});
+
+
+// --- YÜZEN KALPLER EFEKTİ (YENİ) ---
+
+function createFloatingHearts() {
+  const heartEmojis = ['❤️', '💖', '💕', '💗', '💓'];
+  
+  // 3 saniye boyunca kalp oluştur
+  const heartInterval = setInterval(() => {
+    const heart = document.createElement('div');
+    heart.className = 'floating-heart';
+    heart.innerHTML = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+    
+    // Rastgele özellikler
+    heart.style.left = Math.random() * 100 + 'vw';
+    heart.style.setProperty('--size', (Math.random() * 20 + 15) + 'px');
+    heart.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+    heart.style.setProperty('--wobble', (Math.random() * 100 - 50) + 'px');
+    heart.style.setProperty('--rotation', (Math.random() * 360) + 'deg');
+    
+    document.body.appendChild(heart);
+    
+    // Animasyon bitince temizle
+    setTimeout(() => heart.remove(), 5000);
+  }, 100);
+
+  // 3 saniye sonra kalp oluşturmayı bırak
+  setTimeout(() => clearInterval(heartInterval), 3000);
+}
+
+
+// --- GÜL PATLAMASI EFEKTİ ---
+
+function createRoses() {
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+  const numRoses = 35;
+
+  for (let i = 0; i < numRoses; i++) {
+    const rose = document.createElement('div');
+    rose.className = 'rose';
+    rose.innerHTML = '🌹';
+    
+    // Başlangıç konumu (ekranın dışı, sol veya sağ)
+    const fromLeft = i % 2 === 0;
+    const startX = fromLeft ? -50 : window.innerWidth + 50;
+    const startY = Math.random() * window.innerHeight;
+    
+    rose.style.left = startX + 'px';
+    rose.style.top = startY + 'px';
+    
+    // Hedef konumu (merkezin etrafında rastgele)
+    const targetX = centerX + (Math.random() - 0.5) * 250;
+    const targetY = centerY + (Math.random() - 0.5) * 250;
+    
+    // CSS Değişkenlerini ata
+    rose.style.setProperty('--tx', (targetX - startX) + 'px');
+    rose.style.setProperty('--ty', (targetY - startY) + 'px');
+    
+    // Hafif gecikmeli fırlatış
+    rose.style.animationDelay = (Math.random() * 0.6) + 's';
+    
+    document.body.appendChild(rose);
+    
+    // Animasyon bitince temizle
+    setTimeout(() => rose.remove(), 3500);
+  }
+}
+
+
+// --- KONFETİ EFEKTİ ---
+
+function fireConfetti() {
+  const duration = 3000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 35, spread: 360, ticks: 70, zIndex: 100, scalar: 1.2 };
+
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  const interval = setInterval(() => {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) return clearInterval(interval);
+
+    const particleCount = 60 * (timeLeft / duration);
+
+    // İki köşeden konfeti at
+    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#ff4081', '#ffffff', '#ad1457'] });
+    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#ff4081', '#ffffff', '#ad1457'] });
+  }, 250);
+}
+
+
+// --- EVET BUTONU TIKLAMA OLAYI ---
+
+yesBtn.addEventListener('click', () => {
+  // 1. Arayüzü Değiştir
+  btnContainer.style.display = 'none';
+  question.innerHTML = 'Sonsuza Kadar Evet! ✨💞';
+  
+  // Kartı hafifçe büyüt
+  card.style.transform = 'scale(1.02)';
+  card.style.boxShadow = '0 25px 70px rgba(173, 20, 87, 0.3)';
+
+  // 2. Mesajı Göster
+  resultMessage.innerHTML = 'Gökyüzündeki tüm yıldızlar bir araya gelse, senin gözlerindeki o tek bir ışıltı kadar güzel aydınlatamazdı dünyamı... İyi ki varsın! 🌹✨';
+  resultMessage.style.display = 'block';
+
+  // 3. Efektleri Başlat
+  createFloatingHearts(); // Yeni: Yüzen Kalpler
+  createRoses();         // Güller
+  fireConfetti();        // Konfeti
+});
+</script>
+
+</body>
+</html>
